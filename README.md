@@ -14,7 +14,7 @@ This repo is a companion repo to the [AWS Lambda functions and API gateway](http
 
 2. Compile the typescript code to javascript.
 
-        npx tsc
+        npm run build
 
 3. Init terraform.
 
@@ -28,6 +28,13 @@ This repo is a companion repo to the [AWS Lambda functions and API gateway](http
 5. Then we call the api.
 
         curl "$(terraform output -raw base_url)/hello?Name=Terraform"
+
+6. Create an item in Music table
+
+        "Artist","SongTitle","AlbumTitle","Awards"
+        "Acme Band","Happy Day","Album Title","10"
+
+        curl "$(terraform output -raw base_url)/hello?Name=Acme+Band&SongTitle=Happy+Day"
 
 6. Don't forget to destroy everything when you finished testing.
 

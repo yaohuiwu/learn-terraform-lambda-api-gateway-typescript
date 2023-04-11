@@ -12,6 +12,31 @@ provider "aws" {
 
 }
 
+resource "aws_dynamodb_table" "dynamodb_table" {
+  name           = "Music"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 20
+  write_capacity = 20
+  hash_key       = "Artist"
+  range_key      = "SongTitle"
+
+  attribute {
+    name = "Artist"
+    type = "S"
+  }
+
+  attribute {
+    name = "SongTitle"
+    type = "S"
+  }
+
+  ttl {
+    attribute_name = "TimeToExist"
+    enabled        = false
+  }
+
+}
+
 resource "random_pet" "lambda_bucket_name" {
   prefix = "learn-terraform-functions"
   length = 4
@@ -50,7 +75,7 @@ resource "aws_lambda_function" "hello_world" {
   s3_bucket = aws_s3_bucket.lambda_bucket.id
   s3_key    = aws_s3_object.lambda_hello_world.key
 
-  runtime = "nodejs12.x"
+  runtime = "nodejs16.x"
   handler = "hello.handler"
 
   source_code_hash = data.archive_file.lambda_hello_world.output_base64sha256
@@ -84,6 +109,21 @@ resource "aws_iam_role" "lambda_exec" {
 resource "aws_iam_role_policy_attachment" "lambda_policy" {
   role       = aws_iam_role.lambda_exec.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy" "dynamodb_lambda_policy" {
+   name = "dynamodb_lambda_policy" 
+   role = aws_iam_role.lambda_exec.id
+   policy = jsonencode({
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+           "Effect" : "Allow",
+           "Action" : ["dynamodb:*"],
+           "Resource" : "${aws_dynamodb_table.dynamodb_table.arn}"
+        }
+      ]
+   })
 }
 
 # declare an api gateway http api and intergrate the lambda function.
