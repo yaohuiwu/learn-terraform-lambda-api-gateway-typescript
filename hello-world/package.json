@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "prebuild": "rm -rf dist",
+    "build": "esbuild src/hello.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/hello.js",
+    "postbuild": "cd dist && zip -r index.zip index.js*",
     "start": "tsc-watch --onsuccess \"node dist/index.js\"",
     "lint": "npx tslint --project tsconfig.json --config tslint.json",
     "test": "jest"
@@ -22,6 +24,7 @@
   "homepage": "https://github.com/yaohuiwu/typescript-commonjs-template#readme",
   "devDependencies": {
     "@types/jest": "^29.5.0",
+    "esbuild": "^0.17.16",
     "jest": "^24.7.1",
     "ts-jest": "^24.0.2",
     "tsc-watch": "^2.1.2",
