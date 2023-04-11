@@ -1,6 +1,6 @@
-import { Context, APIGatewayProxyCallback, APIGatewayEvent } from 'aws-lambda';
+import { Context, APIGatewayEvent, APIGatewayProxyResult } from 'aws-lambda';
 
-export const handler = (event: APIGatewayEvent, context: Context, callback: APIGatewayProxyCallback): void => {
+export const handler = async (event: APIGatewayEvent, context: Context): Promise<APIGatewayProxyResult> => {
     console.log(`Event: ${JSON.stringify(event, null, 2)}`);
     console.log(`Context: ${JSON.stringify(context, null, 2)}`);
 
@@ -9,7 +9,7 @@ export const handler = (event: APIGatewayEvent, context: Context, callback: APIG
         responseMessage = "Hello," + event.queryStringParameters["Name"];
     }
 
-    callback(null, {
+    return {
         statusCode: 200,
         headers: {
           'Content-Type': 'application/json',
@@ -17,5 +17,5 @@ export const handler = (event: APIGatewayEvent, context: Context, callback: APIG
         body: JSON.stringify({
             message: responseMessage,
         }),
-    });
+    };
 };
