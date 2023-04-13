@@ -30,10 +30,10 @@ resource "aws_dynamodb_table" "dynamodb_table" {
     type = "S"
   }
 
-  ttl {
-    attribute_name = "TimeToExist"
-    enabled        = false
-  }
+  # ttl {
+  #   attribute_name = "TimeToExist"
+  #   enabled        = false
+  # }
 
 }
 
@@ -81,6 +81,8 @@ resource "aws_lambda_function" "hello_world" {
   source_code_hash = data.archive_file.lambda_hello_world.output_base64sha256
 
   role = aws_iam_role.lambda_exec.arn
+
+  layers = ["arn:aws:lambda:${var.aws_region}:580247275435:layer:LambdaInsightsExtension:14"]
 }
 
 resource "aws_cloudwatch_log_group" "hello_world" {

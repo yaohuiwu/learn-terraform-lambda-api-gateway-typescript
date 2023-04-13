@@ -27,6 +27,28 @@ function createDDBDocClient(ddbClient: DynamoDBClient):DynamoDBDocumentClient {
     return DynamoDBDocumentClient.from(ddbClient, translateConfig);
 }
 
+const ddbClient = createDdbClient({region: "ap-northeast-2"});
+const ddbDocClient = createDDBDocClient(ddbClient);
+
+process.on('SIGTERM', async () => {
+    console.info('[runtime] SIGTERM received');
+
+    console.info('[runtime] cleaning up');
+    // perform actual clean up work here. 
+    if (ddbDocClient) {
+        ddbDocClient.destroy();
+        console.info('[runtime] destroy ddbDocClient')
+    }
+    if (ddbClient) {
+        ddbClient.destroy();
+        console.info('[runtime] destroy ddbClient')
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    console.info('[runtime] exiting');
+    process.exit(0)
+});
 
 export const handler = async (event: APIGatewayEvent, context: Context): Promise<APIGatewayProxyResult> => {
     console.log(`Event: ${JSON.stringify(event, null, 2)}`);
@@ -36,9 +58,6 @@ export const handler = async (event: APIGatewayEvent, context: Context): Promise
     if (event.queryStringParameters && event.queryStringParameters["Name"] && event.queryStringParameters["SongTitle"]) {
         const artist = event.queryStringParameters["Name"];
         const songTitle = event.queryStringParameters["SongTitle"];
-        
-        const ddbClient = createDdbClient({region: "ap-northeast-2"});
-        const ddbDocClient = createDDBDocClient(ddbClient);
         try {
             const data = await ddbDocClient.send(new GetCommand({
                 TableName: "Music",
@@ -52,9 +71,6 @@ export const handler = async (event: APIGatewayEvent, context: Context): Promise
         } catch (err) {
             console.log(" Error", err);
             throw err;
-        } finally {
-            ddbDocClient.destroy();
-            ddbClient.destroy();
         }
     }
 
